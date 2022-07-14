@@ -1,5 +1,5 @@
 // set api key and build url
-let api_key = "AIzaSyBIGUM7KugOhd_bTX2m9g2jNXBiWkkraC8";
+let api_key = config.GOOGLE_CIVIC_API_KEY;
 let api_url = "https://www.googleapis.com/civicinfo/v2/representatives?key=" + api_key;
 
 function offices(index) {
@@ -34,7 +34,6 @@ function offices(index) {
 
 				element.officialIndices.forEach((value) => {
 					var repInfo = reps(value, {data})
-					console.log('test ' + repInfo[6])
 					
 					output += `
 					<tr>
