@@ -1,0 +1,21 @@
+.representativesTable {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.socialMediaLink {
+    color: inherit;
+    padding: 5px;
+}
+
+.youtube {
+    color: #ff0000
+}
+
+.facebook {
+    color: #159ff9;
+}
+
+.twitter {
+    color: #1e9bf0;
+}
