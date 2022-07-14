@@ -3,18 +3,23 @@ let api_key = config.GOOGLE_CIVIC_API_KEY;
 let api_url = "https://www.googleapis.com/civicinfo/v2/representatives?key=" + api_key;
 
 function offices(index) {
+	// retrieve data sent from form
 	var formData = new FormData(document.getElementById("addressForm"));
 
+	// create variables from form data
 	var address = formData.get('address');
-	var city = formData.get('city');
+	var city = formData.get('city').replace(/\s/g, ""); // remove spaces between cities with 2 words
 	var state = formData.get('state');
 	var zip = formData.get('zip');
 
+	// make call to api to retrieve representative info
 	fetch(api_url + "&address=" + address + city + state)
 		.then(response => response.json())
 		.then((data) => {
 			console.log(data)
+			// instantiate output variable to send to front end
 			let output = ''
+			// loop through offices and create table
 			data['offices'].forEach((element, i) => {
 				output += `<h2>${element.name}</h2>`
 				output += `
@@ -32,9 +37,12 @@ function offices(index) {
 				<tbody>
 				`
 
+				// loop through official indices to retrieve index of appropriate official
 				element.officialIndices.forEach((value) => {
+					// call reps function to retrieve data of appropriate official - based on index
 					var repInfo = reps(value, {data})
 					
+					// add data from reps function to correct table row
 					output += `
 					<tr>
 					<td>${repInfo[0]}<br><br>${repInfo[6]}</td>
@@ -47,6 +55,7 @@ function offices(index) {
 					`
 				})
 				
+				// complete table closing tags
 				output += `
 				</tbody>
 				</table>
@@ -54,7 +63,9 @@ function offices(index) {
 				<br>
 				`
 			})
+			// insert table into front-end
 			document.getElementById('representatives').innerHTML = output
+			// display reset button when table is displayed
 			document.getElementById('resetButton').style.display = ''
 		}
 	)
@@ -75,6 +86,9 @@ function reps(index, data) {
 			return false
 		}
 
+		// instantiate socialMediaIcons variable as empty in case none exist
+		var socialMediaIcons = ""
+		// if rep has social media, call socialMedia function to retrieve info
 		if (typeof element.channels != "undefined") {
 			var socialMediaIcons = socialMedia(element.channels)
 		}
@@ -83,7 +97,7 @@ function reps(index, data) {
 		var address = (typeof element.geocodingSummaries[0]['queryString'] == "undefined") ? "N/A" : element.geocodingSummaries[0]['queryString']
 		var phone = (typeof element.phones[0] == "undefined") ? "N/A" : element.phones[0]
 		var website = (typeof element.urls == "undefined") ? "N/A" : `<a href=${element.urls[0]} target="_blank">${element.urls[0]}</a>`
-		var social = (typeof element.channels[0]['id'] == "undefined") ? "N/A" : social = element.channels[0]['id']
+		// var social = (typeof element.channels == "undefined") ? `<span>N/A</span>` : social = element.channels[0]['id']
 		var email = (typeof element.emails == "undefined") ? "N/A" : `<a href="mailto:${element.emails[0]}">${element.emails[0]}</a>`
 
 		// push necessary data into array
@@ -98,13 +112,15 @@ function reps(index, data) {
 		)
 	})
 
-		return repDataArray
+	return repDataArray
 }
 
 function socialMedia (data) {
 
+	// instantiate empty socialMedia array
 	var socialMedia = []
 
+	// loop through channel data and push each social media icon and link into array
 	data.forEach(data => {
 		switch (data['type']) {
 			case 'Twitter':
@@ -121,5 +137,6 @@ function socialMedia (data) {
 		}
 	})
 
+	// join array to remove commas for display purposes and return socialMedia array
 	return socialMedia.join('')
 }
