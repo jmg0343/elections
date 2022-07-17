@@ -1,27 +1,39 @@
 // set api key and build url
 let api_key = config.GOOGLE_CIVIC_API_KEY;
-let api_url = "https://www.googleapis.com/civicinfo/v2/representatives?key=" + api_key;
+let api_url = "https://www.googleapis.com/civicinfo/v2/representatives";
 
-function offices(index) {
+function sendData() {
 	// retrieve data sent from form
-	var formData = new FormData(document.getElementById("addressForm"));
+	let formData = new FormData(document.getElementById("addressForm"));
 
 	// create variables from form data
-	var address = formData.get('address');
-	var city = formData.get('city').replace(/\s/g, ""); // remove spaces between cities with 2 words
-	var state = formData.get('state');
-	var zip = formData.get('zip');
+	let address = formData.get('address');
+	let city = formData.get('city').replace(/\s/g, ""); // remove spaces between cities with 2 words
+	let state = formData.get('state');
+	let zip = formData.get('zip');
 
-	// make call to api to retrieve representative info
-	fetch(api_url + "&address=" + address + city + state)
-		.then(response => response.json())
-		.then((data) => {
-			console.log(data)
-			// instantiate output variable to send to front end
+	// create array of form data
+    var data = {address: address, city: city, state: state, zip: zip};
+
+	// call findReps function and pass form data
+    findReps(data)
+}
+
+function findReps(data) {
+	// create array of available rep levels
+    // let levels = ['country', 'administrativeArea1', 'administrativeArea2', 'locality']
+    let levels = ['country', 'administrativeArea1', 'administrativeArea2&levels=locality']
+
+	// loop through levels array and attach level to api call
+    levels.forEach(level => {
+        fetch(api_url + "?key=" + api_key + "&address=" + data.address + data.city + data.state + "&levels=" + level)
+            .then(response => response.json())
+            .then((data) => {
+            // instantiate output variable to send to front end
 			let output = ''
 			// loop through offices and create table
 			data['offices'].forEach((element, i) => {
-				output += `<h2>${element.name}</h2>`
+				output += `<h2 class="text-muted">${element.name}</h2>`
 				output += `
 				<table class='table representativesTable'>
 				<thead class='table-primary'>
@@ -63,12 +75,27 @@ function offices(index) {
 				<br>
 				`
 			})
-			// insert table into front-end
-			document.getElementById('representatives').innerHTML = output
-			// display reset button when table is displayed
+
+			// swtich case determines which div to insert data into
+            switch (level) {
+                case 'country':
+                    document.getElementById('federalRepresentatives').innerHTML ="<h1 class='text-center'><u>Federal Representatives</u></h1><br>" + output
+                    break;
+                case 'administrativeArea1':
+                    document.getElementById('stateRepresentatives').innerHTML = "<h1 class='text-center'><u>State Representatives</u></h1><br>" + output
+                    break;
+                case 'administrativeArea2&levels=locality':
+                    document.getElementById('localRepresentatives').innerHTML = "<h1 class='text-center'><u>Local Representatives</u></h1><br>" + output
+                    break;
+            }
+
+			// expand federal results
+			document.getElementById('federalRepsButton').click();
+			// display reset and filter buttons when table is displayed
 			document.getElementById('resetButton').style.display = ''
-		}
-	)
+			document.getElementById('filterButtons').style.display = ''
+		})
+    })
 }
 
 function reps(index, data) {
@@ -139,4 +166,41 @@ function socialMedia (data) {
 
 	// join array to remove commas for display purposes and return socialMedia array
 	return socialMedia.join('')
+}
+
+function displayBadge(data, level) {
+	if (data.getAttribute('aria-expanded') === "true") {
+		document.getElementById(level).style.display = ''
+	} else {
+		document.getElementById(level).style.display = 'none'
+	}
+}
+
+
+// BACK TO TOP BUTTON
+
+//Get the button
+let backToTopButton = document.getElementById("btn-back-to-top");
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function () {
+  scrollFunction();
+};
+
+function scrollFunction() {
+  if (
+    document.body.scrollTop > 20 ||
+    document.documentElement.scrollTop > 20
+  ) {
+    backToTopButton.style.display = "block";
+  } else {
+    backToTopButton.style.display = "none";
+  }
+}
+// When the user clicks on the button, scroll to the top of the document
+backToTopButton.addEventListener("click", backToTop);
+
+function backToTop() {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
 }
