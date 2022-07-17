@@ -1,5 +1,6 @@
 // set api key and build url
-let api_key = config.GOOGLE_CIVIC_API_KEY;
+// let api_key = config.GOOGLE_CIVIC_API_KEY;
+let api_key = GOOGLE_CIVIC_API_KEY;
 let api_url = "https://www.googleapis.com/civicinfo/v2/representatives";
 
 function sendData() {
